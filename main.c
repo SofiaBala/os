@@ -8,18 +8,18 @@ int main() {
 	time_t now;
 	struct tm* sp;
 	char *ct;
-
-	time_t = time(&now);
-	if (t == -1){
-            perror("Error");
-            exit(1);
-    	}
-
+	
 	int area = putenv("TZ=America/Los_Angeles");
 	if (area != 0){
 		perror("Error");
 		exit(1);
 	}
+	
+	time_t = time(&now);
+	if (t == -1){
+            perror("Error");
+            exit(1);
+    	}
 
 	ct = ctime(&now);
 	if (ct == NULL){
