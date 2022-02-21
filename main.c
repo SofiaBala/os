@@ -9,7 +9,7 @@ int main() {
 	struct tm* sp;
 	char *ct;
 
-	int t = time(&now);
+	time_t = time(&now);
 	if (t == -1){
             perror("Error");
             exit(1);
