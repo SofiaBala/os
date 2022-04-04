@@ -7,7 +7,7 @@
 int main()
 {	
 	printf("Real user id: %d, effective user id: %d\n", getuid(), geteuid());
-
+	
 	FILE* file = fopen("text.txt", "r");
 	if (file == NULL) {
 		perror("File (first try)");
