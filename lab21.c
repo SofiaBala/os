@@ -38,5 +38,10 @@ void sigcatch(int sig)
 	}
 	printf("%c\n", BEL);
 	count_sig++;
-	signal(sig, sigcatch);
+	void* signals = signal(sig, sigcatch);
+	if(signals == SIG_ERR){
+		perror("signal");
+        	exit(ERROR);
+	}
+
 }
