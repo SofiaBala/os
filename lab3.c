@@ -1,7 +1,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <stdio.h>
-#include <stdlib.h>
+#include <errno.h>
 #define SETUID_ERROR 2
 #define ERROR -1
 #define FOPEN_ERROR 3
