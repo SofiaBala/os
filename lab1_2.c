@@ -151,8 +151,7 @@ int main(int argc, char** argv) {
             }
         }
 
-        MPI_Bcast(lastX, N, MPI_DOUBLE, 0, MPI_COMM_WORLD);//▒~@а▒~A▒~A▒~Kлаем ▒~Gа▒~A▒~B▒~L век▒~Bо▒~@а X из п▒~@о▒~Hлой и▒~Bе▒~@а▒~Fии в▒~Aем п▒~@о▒~Fе▒~A▒~A▒▒
-▒м из ко▒~@невого п▒~@о▒~Fе▒~A▒~Aа
+        MPI_Bcast(lastX, N, MPI_DOUBLE, 0, MPI_COMM_WORLD);
         int kS = 0;
         for (int i = 0; i < size; i++) {
             scounts[i] = NM[i];
@@ -168,19 +167,17 @@ int main(int argc, char** argv) {
         int k = 0;
         for (int i = 0; i < size; ++i) {
             displs[i] = k;
-            scounts[i] = NM[i];//▒~Gи▒~Aло ▒~Mл в кажд п▒~@о▒~F
+            scounts[i] = NM[i];
                                                                   k = k + scounts[i];
         }
         MPI_Allgatherv(AxBuf, NM[rank], MPI_DOUBLE, Ax, scounts, displs, MPI_DOUBLE, MPI_COMM_WORLD);
-        //по▒~Aле ▒~@аз▒~@езани▒~O, о▒~Bп▒~@вки по п▒~@о▒~Fе▒~A▒~Aам, об▒~@або▒~Bки на каждом п▒~@о▒~Fе▒~A▒~Aе век▒~Bо▒~@ TAU*(A*xn - b) ▒~Aо▒▒
-▒и▒~@ае▒~B▒~A▒~O в един▒~Kй век▒~Bо▒~@ Ax во в▒~Aе▒~E п▒~@о▒~Fе▒~A▒~Aа▒~E
+       
         if (rank == 0) {
             normAxb = abcMatrix(Ax, NN); // ||A*xn - b||
             sub(lastX, Ax, nextX, NN); // x(n+1) = xn - TAU * (A*xn - b)
             res = normAxb / normB;
 
-            count++;//под▒~A▒~Gе▒~B и▒~Bе▒~@а▒~Fий, ▒~G▒~Bоб▒~K можно б▒~Kло ▒~Aмени▒~B▒~L знак tau, е▒~Aли ▒~@е▒~Hение на▒~Gинае▒~B ▒~@а▒~A▒~Eод▒
-и▒~B▒~L▒~A▒~O
+            count++;
             if ((count > 10000000 && lastres > res)) {
                 if (tau < 0) {
                     printf("Does not converge\n");
