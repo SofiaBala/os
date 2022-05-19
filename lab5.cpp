@@ -112,17 +112,6 @@ void send_recv_data(int J, int K, int rank, int size, const int* numNode)
         MPI_Isend(&(function[l0][(numNode[rank] - 1) * J * K]), K * J, MPI_DOUBLE, rank + 1, 1,MPI_COMM_WORLD, &send_req[1]);
         MPI_Irecv(next_layer, K * J, MPI_DOUBLE, rank + 1, 0, MPI_COMM_WORLD, &recv_req[0]);
     }
-    //ожидание завершения обменов
-    if (rank != 0)
-    {
-        MPI_Wait(&recv_req[1], MPI_STATUS_IGNORE);
-        MPI_Wait(&send_req[0], MPI_STATUS_IGNORE);
-    }
-    if (rank != size - 1)
-    {
-        MPI_Wait(&recv_req[0], MPI_STATUS_IGNORE);
-        MPI_Wait(&send_req[1], MPI_STATUS_IGNORE);
-    }
 }
 
 void delta(int J, int K, double hx, double hy, double hz, int rank, const int* numNode, const int* slip)
