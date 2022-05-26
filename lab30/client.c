@@ -29,13 +29,6 @@ int close_socket(int clientfd){
     }
 }
 
-int unlink_file(const char *name){
-    if(unlink(name) == ERROR_UNLINK){
-	perror("error unlink");
-	return ERROR_UNLINK;
-    }
-}
-
 int write_info(int clientfd){
 	
     int num_read, num_write;
