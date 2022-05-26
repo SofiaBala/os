@@ -20,7 +20,6 @@
 #define TRUE 1
 
 int clientfd;
-void catchsignal(int sig){}
 
 int close_socket(int clientfd){
     int num_close = close(clientfd);
@@ -60,12 +59,7 @@ int write_info(int clientfd){
 }
 
 int main() {
-    void* signal_result = signal(SIGPIPE, catchsignal);
-    if (signal_result == SIG_ERR){
-        perror("working signal");
-        return ERROR;
-    }
-
+    signal(SIGPIPE, SIG_IGN);
     struct sockaddr_un c_addr;
     clientfd = socket(AF_UNIX, SOCK_STREAM, 0);
     if(clientfd == ERROR_SOCKET) {
