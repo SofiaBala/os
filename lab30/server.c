@@ -17,107 +17,111 @@
 #define ERROR_READ -1
 #define ERROR_WRITE -1
 #define ERROR_CLOSE -1
+#define ERROR_ACCEPT -1
+#define ERROR 1
+#define END_OF_FILE 0
+#define TRUE 1
 
 int serverfd;
-int clientfd;
+int new_socket;
 
-int f_close(int some){
-    int num_close = close(some);
+int close_socket(int socketfd){
+    int num_close = close(socketfd);
     if(num_close == ERROR_CLOSE){
 	perror("error close");
-	return ERROR_CLOSE;
+	return ERROR;
     }
 }
 
-int f_unlink(const char *name){
+int unlink_file(const char *name){
     if(unlink(name) == ERROR_UNLINK){
 	perror("error unlink");
-	return ERROR_UNLINK;
+	return ERROR;
     }
 }
 
 void sigcatch(int sig) {
     if(sig == SIGINT) {
-        f_close(serverfd);
-        f_close(clientfd);
-        f_unlink(FILENAME);
-        exit(1);
+        close_socket(serverfd);
+        close_socket(new_socket);
+        unlink_file(FILENAME);
+        exit(0);
     }
 }
 
-int ch_socket(int domain, int type, int protocol) {
-    int res = socket(domain, type, protocol);
-    if(res == ERROR_SOCKET) {
-        perror("socket failed");
-        exit(EXIT_FAILURE);
+int read_info(int clientfd){
+    int num_read, num_write;
+    char buffer[BUFSIZ];
+
+    int i;
+
+    while(TRUE) {
+	num_read = read(clientfd, buffer, BUFSIZ);
+	if(num_read == ERROR_READ){
+	    perror("error read");
+	    return ERROR;
+	}
+	if (num_read == END_OF_FILE) break;
+        for(i = 0; i < num_read; ++i) {
+            buffer[i] = toupper(buffer[i]);
+        }
+	num_write = write(STDOUT_FILENO, buffer, num_read);
+	if(num_write == ERROR_WRITE){
+	    perror("error write");
+	    return ERROR;
+	}
     }
-    return res;
+    return 0;
 }
 
-void ch_bind(int serverfd, struct sockaddr* addr, socklen_t addrlen) {
-    if(bind(serverfd, addr, addrlen) == ERROR_BIND) {
-        f_close(serverfd);
+int establish_connect(int serverfd,  struct sockaddr* addr){
+    int bind_res = bind(serverfd, addr, sizeof(*addr));
+    if(bind_res == ERROR_BIND) {
+        close_socket(serverfd);
         perror("bind failed");
-        exit(EXIT_FAILURE);
+        return ERROR;
     }
-}
-
-void ch_listen(int descriptor, int backlog) {
-    if(listen(descriptor, backlog) == ERROR_LISTEN) {
+    int listen_res = listen(serverfd, BACKLOG);
+    if(listen_res == ERROR_LISTEN) {
         perror("listen failed");
-        exit(EXIT_FAILURE);
+        return ERROR;
     }
+    new_socket = accept(serverfd, NULL, NULL);
+    if(new_socket == ERROR_ACCEPT) {
+        perror("accept failed");
+        return ERROR;
+    }
+    return new_socket;
 }
 
 int main() {
     struct sockaddr_un addr; 
     signal(SIGINT, sigcatch);
 
-    serverfd = ch_socket(AF_UNIX, SOCK_STREAM, 0);
+    serverfd = socket(AF_UNIX, SOCK_STREAM, 0);
+    if(serverfd == ERROR_SOCKET) {
+        perror("socket failed");
+        return ERROR_SOCKET;
+    }
 
     memset(&addr, 0, sizeof(struct sockaddr_un));
     addr.sun_family = AF_UNIX;
     strncpy(addr.sun_path, FILENAME, sizeof(addr.sun_path) - 1);
-
-    ch_bind(serverfd, (struct sockaddr*)&addr, sizeof(addr));
-
-    ch_listen(serverfd, BACKLOG);
-
-    struct sockaddr client_addr;
-    socklen_t cl_addrlen = sizeof(client_addr);
-
-    printf("Waiting to accept a connection...\n");
-    clientfd = accept(serverfd, &client_addr, &cl_addrlen);
-    printf("Accepted\n");
-
-    int num_read, num_write;
-    char buffer[BUFSIZ];
-
-    int i;
-
-    while((num_read = read(clientfd, buffer, BUFSIZ)) > 0) {
-	if(num_read == ERROR_READ){
-	    perror("error read");
-	    return ERROR_READ;
-	}
-        for(i = 0; i < num_read; ++i) {
-            buffer[i] = toupper(buffer[i]);
-        }
-	num_write = write(1, buffer, num_read);
-	if(num_write == ERROR_WRITE){
-	    perror("error write");
-	    return ERROR_WRITE;
-	}
-        if(num_write != num_read) {
-            printf("writing failed");
-            f_close(serverfd);
-            f_close(clientfd);
-            f_unlink(FILENAME);
-            exit(EXIT_FAILURE);
-        }
+ 
+    int link = establish_connect(serverfd,(struct sockaddr*)&addr);
+    if(link == ERROR){
+	return ERROR;
     }
-    f_close(serverfd);
-    f_close(clientfd);
-    f_unlink(FILENAME);
+
+    int read = read_info(link);
+    if(read == ERROR){
+	close_socket(serverfd);
+        close_socket(new_socket);
+        unlink_file(FILENAME);
+	return ERROR;
+    }
+    close_socket(serverfd);
+    close_socket(new_socket);
+    unlink_file(FILENAME);
     return 0;
 }
