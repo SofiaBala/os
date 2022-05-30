@@ -96,7 +96,12 @@ int establish_connect(int serverfd,  struct sockaddr* addr){
 
 int main() {
     struct sockaddr_un addr; 
-    signal(SIGINT, sigcatch);
+    void* sigset_res = sigset(SIGINT, sigcatch);
+    if (sigset_res == SIG_ERR){
+        perror("sigset");
+        return ERROR;
+    }
+
 
     serverfd = socket(AF_UNIX, SOCK_STREAM, 0);
     if(serverfd == ERROR_SOCKET) {
@@ -110,6 +115,7 @@ int main() {
  
     int link = establish_connect(serverfd,(struct sockaddr*)&addr);
     if(link == ERROR){
+        unlink_file(FILENAME);
 	return ERROR;
     }
 
