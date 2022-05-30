@@ -40,9 +40,10 @@ int write_info(int clientfd){
 	if(num_read == ERROR_READ){
 	    perror("error read");
 	    return ERROR;
-
 	}
+		
 	if (num_read == END_OF_FILE) break;
+		
 	num_write = write(clientfd, buffer, num_read);
 	if(num_write == ERROR_WRITE){
 	    perror("error write");
