@@ -35,7 +35,7 @@ int write_info(int clientfd){
     int num_read, num_write;
     char buffer[BUFSIZ];
 
-        while(TRUE) {
+    while(TRUE) {
 	num_read = read(STDIN_FILENO, buffer, BUFSIZ);
 	if(num_read == ERROR_READ){
 	    perror("error read");
@@ -74,6 +74,7 @@ int main() {
     int connected = connect(clientfd, (struct sockaddr*)&c_addr, sizeof(c_addr));
     if(connected == ERROR_CONNECT) {
         perror("connect failed");
+	close_socket(clientfd);
         return ERROR;
     }
     
